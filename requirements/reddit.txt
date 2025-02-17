@@ -1,0 +1,16 @@
+backports.entry-points-selectable @ file:///private/tmp/nix-build-python3.10-backports-entry-points-selectable-1.1.1.drv-0/backports.entry_points_selectable-1.1.1/dist/backports.entry_points_selectable-1.1.1-py2.py3-none-any.whl
+certifi==2025.1.31
+charset-normalizer==3.4.1
+distlib @ file:///private/tmp/nix-build-python3.10-distlib-0.3.6.drv-0/distlib-0.3.6/dist/distlib-0.3.6-py2.py3-none-any.whl
+filelock @ file:///private/tmp/nix-build-python3.10-filelock-3.8.0.drv-0/filelock-3.8.0/dist/filelock-3.8.0-py3-none-any.whl
+idna==3.10
+platformdirs @ file:///private/tmp/nix-build-python3.10-platformdirs-2.5.3.drv-0/source/dist/platformdirs-2.5.3-py3-none-any.whl
+praw==7.8.1
+prawcore==2.4.0
+python-dotenv==1.0.1
+requests==2.32.3
+six @ file:///private/tmp/nix-build-python3.10-six-1.16.0.drv-0/six-1.16.0/dist/six-1.16.0-py2.py3-none-any.whl
+update-checker==0.18.0
+urllib3==2.3.0
+virtualenv @ file:///private/tmp/nix-build-python3.10-virtualenv-20.16.5.drv-0/virtualenv-20.16.5/dist/virtualenv-20.16.5-py3-none-any.whl
+websocket-client==1.8.0

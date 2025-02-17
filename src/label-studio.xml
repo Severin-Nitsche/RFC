@@ -1,0 +1,67 @@
+<View>
+  <Style>
+    .font-smooth {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: 0.025em;
+      font-weight: 400;
+      display: flex;
+      flex: 1;
+      flex-direction: row;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+  </Style>
+  <View className="font-smooth">
+    <Style>
+      .text {
+        border: 2pt solid #22cc11;
+        border-radius: 7pt;
+        width: 48%;
+        flex-grow: 1;
+        padding: 1em;
+        text-align: justify;
+        max-height: min(34em,48vh);
+        overflow-y: auto;
+      }
+      .instructions {
+        min-width: min(360px,100%);
+        width: 48%;
+        flex-grow: 1;
+      }
+    </Style>
+    <View className="text">
+      <Text style=".text" name="text" value="$text" granularity="word"/>
+    </View>
+    <View className="instructions">
+      <Header value="1. Lies den Text."/>
+      <Header value="2. Markiere alle Entities mit den folgenden tags."/>
+      <Labels name="ner" toName="text">
+        <Label value="PERSON" background="#0081A7" hotkey="p" />
+        <Label value="CODE" background="#00AFB9" hotkey="c"/>
+        <Label value="LOC" background="#FDFCDC" hotkey="l"/>
+        <Label value="ORG" background="#FED9B7" hotkey="o"/>
+        <Label value="DEM" background="#F07167" hotkey="d"/>
+        <Label value="DATETIME" background="#004E64" hotkey="t"/>
+        <Label value="QUANTITY" background="#00A5CF" hotkey="q"/>
+        <Label value="MISC" background="#9FFFCB" hotkey="m"/>
+      </Labels>
+      <Header value="3. Markiere jedes Entity als Quasi, Direct oder gar kein Identifier"/>
+      <Labels name="identifier" toName="text">
+        <Label value="DIRECT_ID" background="#25A18E" />
+        <Label value="QUASI_ID" background="#7AE582"/>
+        <Label value="NO_MASK" background="#D00000"/>
+      </Labels>
+      <Header value="4. Gib zu jedem Entity an, welchen Status der Identifier hat"/>
+      <Labels name="confidentialStatus" toName="text">
+        <Label value="BELIEF" background="#FFBA08" />
+        <Label value="POLITICS" background="#3F88C5"/>
+        <Label value="SEX" background="#032B43"/>
+        <Label value="ETHNIC" background="#136F63" />
+        <Label value="HEALTH" background="#AAFCB8"/>
+        <Label value="NOT_CONFIDENTIAL" background="#8CD790"/>
+      </Labels>
+      <Header value="5. Passt alles?"/>
+    </View>
+  </View>
+</View>

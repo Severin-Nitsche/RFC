@@ -1,7 +1,9 @@
-rfc-venv/
-integrated_datasets/
-checkpoints/
+venv/
 out/
 __pycache__/
+
+integrated_datasetes/
+checkpoints/
 checkpoints.json
+
 .env
