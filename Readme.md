@@ -38,7 +38,7 @@ But I cannot bring the kind of man power for this kind of work needed, as I am o
 To conduct the LLM-labelling, I'll write a script that can be found in `deepseek.py`.
 
 ## Reproducing
-I try to be as reproducible as possible, by conducting my experiments in an isolated `nix-shell` and a python `venv`. I also try to maintain an up to date copy of `requirements.txt`.
+I try to be as reproducible as possible, by conducting my experiments in an isolated `nix develop` and a python `venv`. I also try to maintain an up to date copy of `requirements.txt`.
 
 ## To Do
 - [x] Save the Label Studio configuration to git
