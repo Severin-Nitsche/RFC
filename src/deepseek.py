@@ -1,4 +1,5 @@
 # Credit to https://michaelwornow.net/2024/01/09/lm-format-enforcer-demo
+import config
 
 from vllm import LLM, SamplingParams
 from lmformatenforcer import CharacterLevelParser
@@ -7,7 +8,6 @@ import json
 import spacy
 
 from ner_parser import NERParser
-import config
 
 nlp = spacy.load('en_core_web_sm')
 
