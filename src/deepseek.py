@@ -6,6 +6,7 @@ from lmformatenforcer import CharacterLevelParser
 from lmformatenforcer.integrations.vllm import build_vllm_logits_processor, build_vllm_token_enforcer_tokenizer_data
 import json
 import spacy
+import torch
 
 from ner_parser import NERParser
 
@@ -48,8 +49,9 @@ with open(config.REDDIT_POSTS, "r") as posts_file:
         ) for prompt in prompts
     ]
 
-    results = deepseek.generate(prompts, sampling_params=sampling_params)
-    for result in results:
-        print(result.outputs[0].text)
-    with open('tests.json', "w") as out:
-        json.dump(results, out)
+    with torch.cuda.amp.autocast(enabled=torch.amp, dtype=torch.float8) and torch.no_grad():
+        results = deepseek.generate(prompts, sampling_params=sampling_params)
+        for result in results:
+            print(result.outputs[0].text)
+        with open('tests.json', "w") as out:
+            json.dump(results, out)

@@ -27,3 +27,4 @@ if HPC_WORK is None:
 else:
     os.environ['HF_HOME'] = HPC_WORK + CACHE_DIR
     # Make sure to import this before huggingface
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True' # Pytorch memory combat
