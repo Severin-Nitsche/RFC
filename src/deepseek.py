@@ -13,7 +13,7 @@ nlp = spacy.load('en_core_web_sm')
 
 with open(config.REDDIT_POSTS, "r") as posts_file:
     posts = json.load(posts_file)
-    prompts = [posts[0]['data']['text'], nlp(next(posts[0]['data']['text']).sents).text]; # TODO: load from json
+    prompts = [posts[0]['data']['text'], nlp(list(posts[0]['data']['text']).sents)[0].text]; # TODO: load from json
 
     deepseek = LLM(model="deepseek-ai/deepseek-v3")
 
