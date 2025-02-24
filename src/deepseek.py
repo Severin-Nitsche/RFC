@@ -12,7 +12,7 @@ from ner_parser import NERParser
 
 nlp = spacy.load('en_core_web_sm')
 
-with open(config.REDDIT_POSTS, "r") as posts_file:
+with torch.cuda.amp.autocast(enabled=torch.amp, dtype=torch.float8) and torch.no_grad() and open(config.REDDIT_POSTS, "r") as posts_file:
     posts = json.load(posts_file)
     prompts = [posts[0]['data']['text'], list(nlp(posts[0]['data']['text']).sents)[0].text]; # TODO: load from json
 
@@ -49,9 +49,8 @@ with open(config.REDDIT_POSTS, "r") as posts_file:
         ) for prompt in prompts
     ]
 
-    with torch.cuda.amp.autocast(enabled=torch.amp, dtype=torch.float8) and torch.no_grad():
-        results = deepseek.generate(prompts, sampling_params=sampling_params)
-        for result in results:
-            print(result.outputs[0].text)
-        with open('tests.json', "w") as out:
-            json.dump(results, out)
+    results = deepseek.generate(prompts, sampling_params=sampling_params)
+    for result in results:
+        print(result.outputs[0].text)
+    with open('tests.json', "w") as out:
+        json.dump(results, out)
