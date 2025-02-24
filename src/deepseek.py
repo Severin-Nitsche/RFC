@@ -15,7 +15,7 @@ with open(config.REDDIT_POSTS, "r") as posts_file:
     posts = json.load(posts_file)
     prompts = [posts[0]['data']['text'], list(nlp(posts[0]['data']['text']).sents)[0].text]; # TODO: load from json
 
-    deepseek = LLM(model="deepseek-ai/deepseek-v3")
+    deepseek = LLM(model="deepseek-ai/deepseek-v3", trust_remote_code=True)
 
     tokenizer_data = build_vllm_token_enforcer_tokenizer_data(deepseek)
     sampling_params = SamplingParams() # temperature=?, top_p=?, .max_tokens=?
