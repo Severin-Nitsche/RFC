@@ -4,7 +4,7 @@
 #SBATCH --output=deepseek_%J.txt
 #SBATCH --partition=c23g
 #SBATCH --gres=gpu:2
-#SBATCH --mem=256G
+#SBATCH --mem-per-cpu=20G
 
 #SBATCH --time=00:15:00
 #SBATCH --mail-user=severin.nitsche@rwth-aachen.de
