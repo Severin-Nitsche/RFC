@@ -26,5 +26,5 @@ if HPC_WORK is None:
     warn("$HPCWORK not defined; not changing cache directory (used for huggingface models)")
 else:
     os.environ['HF_HOME'] = HPC_WORK + CACHE_DIR
-    # Make sure to import this before huggingface
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True' # Pytorch memory combat
+    # Make sure to import this before huggingface (otherwise HF_HOME will have no effect)
+os.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'
