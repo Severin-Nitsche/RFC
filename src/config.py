@@ -9,6 +9,11 @@ OUT_DIR = './out'
 REDDIT_POSTS = OUT_DIR + '/posts.json'
 ANALYZED_POSTS = OUT_DIR + '/processed_posts.json'
 
+TEMPLATE_DIR = './templates'
+ANNOTATE = TEMPLATE_DIR + '/ANNOTATE.tmpl'
+CLASSIFY = TEMPLATE_DIR + '/CLASSIFY.tmpl'
+VERIFY = TEMPLATE_DIR + '/VERIFY.tmpl'
+
 load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
