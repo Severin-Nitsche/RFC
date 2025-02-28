@@ -8,7 +8,7 @@ from typing import Optional
 import spacy
 import tqdm
 
-class PromptType(Enum):
+class PromptType(str, Enum):
     ANNOTATE = 'annotate'
     CLASSIFY = 'classify'
     VERIFY = 'verify'
@@ -25,6 +25,7 @@ class PromptInfo:
     category: str
     explanation: str
     example: [Example]
+    options: Optional[str]
 
 def preprocess_echr(path):
     with open(path, 'r', encoding='utf-8') as file:
@@ -43,7 +44,7 @@ def process_echr(echr, prompt_type: PromptType, category):
     flatten = []
 
     def _process(func):
-        for data in tqdm.tqdm(echr, desc=f'Processing {prompt_type} {category}'):
+        for data in echr:
             doc = data['nlp']
             for sent in doc.sents:
                 for annotator in data['annotations']:
@@ -147,18 +148,20 @@ explanations = {
 
 echr = preprocess_echr(config.ECHR_DEV)
 
-annotate_examples = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types))
-verify_examples = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types))
-classify_examples = {
-    'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
-    'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
+examples = {
+    'annotate': dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types)),
+    'verify': dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types)),
+    'classify': {
+        'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
+        'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
+    }
 }
 
-def get_info(category: str, prompt_type: PromptType, examples: dict, example_is_undesired, explanation: dict=explanations, num_examples: int=3, max_try: int=42):
-    info = PromptInfo(prompt_type, category, explanation[category], [None]*num_examples)
+def get_info(category: str, prompt_type: PromptType, example_is_undesired, options: Optional[str]=None, examples: dict=examples, explanation: dict=explanations, num_examples: int=3, max_try: int=42):
+    info = PromptInfo(prompt_type, category, explanation[category], [None]*num_examples, options)
     for i in range(num_examples):
         for _ in range(max_try):
-            example = random.choice(examples[category])
+            example = random.choice(examples[prompt_type][category])
             info.example[i] = example # We will *always* have an example, but it might be bad
             if not example_is_undesired(example, i):
                 break
@@ -169,9 +172,11 @@ identifier_type_default = lambda example, _: example.output == 'NO_MASK'
 verify_default = lambda example, i: (example.output == 'no' or i % 2 == 1) and (example.output == 'yes' or i % 2 == 0)
 annotate_default = lambda example, _: example.output == example.input
 
+optionify = lambda options: ', '.join(options)
+
 # print('====== Classify =======')
-# print(get_info('confidential_status',PromptType.CLASSIFY,classify_examples,confidential_status_default))
+# print(get_info('confidential_status',PromptType.CLASSIFY,confidential_status_default,optionify(confidential_statuses)))
 # print('====== Annotate =======')
-# print(get_info('PERSON',PromptType.ANNOTATE,annotate_examples,annotate_default))
+# print(get_info('PERSON',PromptType.ANNOTATE,annotate_default))
 # print('====== Verify =======')
-# print(get_info('CODE',PromptType.VERIFY,verify_examples,verify_default))
+# print(get_info('CODE',PromptType.VERIFY,verify_default))
