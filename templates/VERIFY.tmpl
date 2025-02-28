@@ -1,13 +1,13 @@
-I am an excellent linguist. The task is to verify whether the word is a ${entity_type} entity extracted from the given sentence.
-${entity_type} entities are ${explanation}.
+I am an excellent linguist. The task is to verify whether the word is a ${category} entity extracted from the given sentence.
+${category} entities are ${explanation}.
 
 The given sentence: ${example[0].input}
-Is the word "${example[0].word}" a ${entity_type} entity? Please answer with yes or no.
+Is the word "${example[0].entity}" a ${category} entity? Please answer with yes or no.
 ${example[0].classification}
 
 The given sentence: ${example[1].input}
-Is the word "${example[1].word}" a ${entity_type} entity? Please answer with yes or no.
+Is the word "${example[1].entity}" a ${category} entity? Please answer with yes or no.
 ${example[1].classification}
 
 The given sentence: ${prompt.input}
-Is the word "${prompt.word}" a ${entity_type} entity? Please answer with yes or no.
+Is the word "${prompt.entity}" a ${category} entity? Please answer with yes or no.
