@@ -3,18 +3,14 @@ from warnings import warn
 import platform
 import os
 
-VERSION = '1.0.0-alpha'
-
+# General
 OUT_DIR = './out'
-REDDIT_POSTS = OUT_DIR + '/posts.json'
-ANALYZED_POSTS = OUT_DIR + '/processed_posts.json'
-
-TEMPLATE_DIR = './templates'
-ANNOTATE = TEMPLATE_DIR + '/ANNOTATE.tmpl'
-CLASSIFY = TEMPLATE_DIR + '/CLASSIFY.tmpl'
-VERIFY = TEMPLATE_DIR + '/VERIFY.tmpl'
-
 load_dotenv()
+
+# Reddit Scraper
+VERSION = '1.0.0-alpha'
+REDDIT_POSTS = OUT_DIR + '/posts.json'
+
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 USER_AGENT = f'{platform.system()}:{CLIENT_ID}:{VERSION} (by /u/SeveDaMan)'
@@ -23,6 +19,19 @@ if CLIENT_ID is None:
     warn("CLIENT_ID not set in .env (used for reddit API)")
 if CLIENT_SECRET is None:
     warn("CLIENT_SECRET not set in .env (used for reddit API)")
+
+# Sentiment Analysis
+ANALYZED_POSTS = OUT_DIR + '/processed_posts.json'
+
+# Deepseek
+EXAMPLE_DIR = './examples'
+TEMPLATE_DIR = './templates'
+
+ECHR_DEV = EXAMPLE_DIR + '/echr_dev.json'
+
+ANNOTATE = TEMPLATE_DIR + '/ANNOTATE.tmpl'
+CLASSIFY = TEMPLATE_DIR + '/CLASSIFY.tmpl'
+VERIFY = TEMPLATE_DIR + '/VERIFY.tmpl'
 
 HPC_WORK = os.getenv("HPCWORK")
 CACHE_DIR = '/cache'
