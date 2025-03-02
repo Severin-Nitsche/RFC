@@ -26,6 +26,8 @@ class PromptInfo:
     explanation: str
     example: [Example]
     options: Optional[str]
+    def __getitem__(self, item):
+        return getattr(self, item)
 
 def preprocess_echr(path):
     with open(path, 'r', encoding='utf-8') as file:
