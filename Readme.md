@@ -42,9 +42,9 @@ I try to be as reproducible as possible, by conducting my experiments in an isol
 
 ## To Do
 - [x] Save the Label Studio configuration to git
-- [ ] Aggregate the sentiment data
+- [x] Aggregate the sentiment data
 - [ ] Implement GPT-NER
-  - [ ] Get DeepSeek V3 running
-  - [ ] Get output format enforcing working
+  - [x] Get DeepSeek V3 running
+  - [x] Get output format enforcing working
   - [ ] Retrain TAB
 - [ ] Build final pipeline
