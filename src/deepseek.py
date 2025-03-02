@@ -39,7 +39,7 @@ prompts = [generate_prompt(
 ) for prompt in inputs for category in entity_types]
 
 print(f'Generated {len(prompts)} ANNOTATE prompts')
-exit()
+
 print('Initializing Model...')
 
 deepseek = LLM(model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B", trust_remote_code=True, tensor_parallel_size=2, distributed_executor_backend='mp', gpu_memory_utilization=0.97)
