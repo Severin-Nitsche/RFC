@@ -5,8 +5,8 @@ if not __name__ == '__main__':
 import config
 
 from deepseek_types import PromptType
-from prompts import generate_prompt, entity_types, identifier_types, confidential_statuses
-from data_manipulation import preprocess, construct_examples
+from prompts import generate_prompt, entity_types, identifier_types, confidential_statuses, construct_examples
+from data_manipulation import preprocess
 
 from vllm import LLM, SamplingParams
 from lmformatenforcer.integrations.vllm import build_vllm_logits_processor, build_vllm_token_enforcer_tokenizer_data
@@ -26,19 +26,20 @@ for post in posts:
     for sent in post['nlp'].sents:
         inputs.append(sent.text)
 
-# parsers = [NERParser(prompt, config.TAG_START, config.TAG_END) for prompt in prompts]
+print(f'Extracted {len(inputs)} sentences.')
+
+if config.MAX_ANNOTATE_PROMPTS > 0:
+    inputs = random.sample(inputs, config.MAX_ANNOTATE_PROMPTS // len(entity_types))
+
+parsers = [NERParser(prompt, config.TAG_START, config.TAG_END) for prompt in inputs for _ in entity_types]
 prompts = [generate_prompt(
     category,
     PromptType.ANNOTATE,
     prompt
 ) for prompt in inputs for category in entity_types]
 
-print(f'Prepared {len(prompts)} ANNOTATE prompts.')
-
-if config.MAX_ANNOTATE_PROMPTS > 0:
-    prompts = random.sample(prompts, config.MAX_ANNOTATE_PROMPTS)
-    print(f'Reduced to {config.MAX_ANNOTATE_PROMPTS} prompts.')
-
+print(f'Generated {len(prompts)} ANNOTATE prompts')
+exit()
 print('Initializing Model...')
 
 deepseek = LLM(model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B", trust_remote_code=True, tensor_parallel_size=2, distributed_executor_backend='mp', gpu_memory_utilization=0.97)

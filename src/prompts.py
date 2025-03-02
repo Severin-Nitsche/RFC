@@ -38,13 +38,12 @@ explanations = {
 examples = {}
 
 def construct_examples(echr):
-    examples = {
-        'annotate': dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types)),
-        'verify': dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types)),
-        'classify': {
-            'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
-            'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
-        }
+    global examples
+    examples['annotate']= dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types))
+    examples['verify'] = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types))
+    examples['classify'] = {
+        'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
+        'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
     }
 
 def get_info(category: str, prompt_type: PromptType, example_is_undesired, options: Optional[str]=None, examples: dict=examples, explanation: dict=explanations, num_examples: int=3, max_try: int=42):
