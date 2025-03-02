@@ -27,6 +27,9 @@ ANALYZED_POSTS = OUT_DIR + '/processed_posts.json'
 EXAMPLE_DIR = './examples'
 TEMPLATE_DIR = './templates'
 
+TAG_START = '@@'
+TAG_END = '##'
+
 ECHR_DEV = EXAMPLE_DIR + '/echr_dev.json'
 
 ANNOTATE = TEMPLATE_DIR + '/ANNOTATE.tmpl'
