@@ -35,16 +35,17 @@ explanations = {
     'confidential_status': 'BELIEF refers to Religious or philosophical beliefs\nPOLITICS refers to Political opinions, trade union membership\nSEX refers to Sexual orientation or sex life\nETHNIC refers to Racial or ethnic origin\nHEALTH refers to Health, genetic and biometric data. This includes sensitive health-related habits, such as substance abuse\nNOT_CONFIDENTIAL refers to Not confidential information (most entities)'
 }
 
-echr = preprocess(config.ECHR_DEV, lambda data: data['text'], 'echr')
+examples = {}
 
-examples = {
-    'annotate': dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types)),
-    'verify': dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types)),
-    'classify': {
-        'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
-        'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
+def construct_examples(echr):
+    examples = {
+        'annotate': dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types)),
+        'verify': dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types)),
+        'classify': {
+            'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
+            'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
+        }
     }
-}
 
 def get_info(category: str, prompt_type: PromptType, example_is_undesired, options: Optional[str]=None, examples: dict=examples, explanation: dict=explanations, num_examples: int=3, max_try: int=42):
     info = PromptInfo(prompt_type, category, explanation[category], [None]*num_examples, options)
@@ -108,9 +109,9 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
             get_info(category, prompt_type, verify_default, num_examples=2)
         ))
 
-print('====== Annotate =======')
-print(generate_prompt('PERSON', PromptType.ANNOTATE,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.'))
-print('====== Classify =======')
-print(generate_prompt('confidential_status', PromptType.CLASSIFY,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.', 'Maria'))
-print('====== Verify =======')
-print(generate_prompt('CODE', PromptType.VERIFY,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.','dad'))
+# print('====== Annotate =======')
+# print(generate_prompt('PERSON', PromptType.ANNOTATE,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.'))
+# print('====== Classify =======')
+# print(generate_prompt('confidential_status', PromptType.CLASSIFY,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.', 'Maria'))
+# print('====== Verify =======')
+# print(generate_prompt('CODE', PromptType.VERIFY,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.','dad'))

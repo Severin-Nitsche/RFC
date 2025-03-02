@@ -4,65 +4,70 @@ if not __name__ == '__main__':
 # Credit to https://michaelwornow.net/2024/01/09/lm-format-enforcer-demo
 import config
 
+from deepseek_types import PromptType
+from prompts import generate_prompt, entity_types, identifier_types, confidential_statuses
+from data_manipulation import preprocess, construct_examples
+
 from vllm import LLM, SamplingParams
-from lmformatenforcer import CharacterLevelParser
 from lmformatenforcer.integrations.vllm import build_vllm_logits_processor, build_vllm_token_enforcer_tokenizer_data
 import json
-import spacy
-# import torch
+import random
+import tqdm
 
 from ner_parser import NERParser
 
-nlp = spacy.load('en_core_web_sm')
+echr = preprocess(config.ECHR_DEV, lambda data: data['text'], 'echr')
+construct_examples(echr)
+posts = preprocess(config.REDDIT_POSTS, lambda post: post['data']['text'], 'Reddit Posts')
 
-# with torch.amp.autocast(enabled=torch.amp, dtype=torch.bfloat16) and torch.no_grad() and 
-with open(config.REDDIT_POSTS, "r") as posts_file:
-    posts = json.load(posts_file)
-    prompts = [list(nlp(posts[0]['data']['text']).sents)[0].text]; # TODO: load from json
+inputs = []
 
-    print('Initializing Model...')
+for post in posts:
+    for sent in post['nlp'].sents:
+        inputs.append(sent.text)
 
-    deepseek = LLM(model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B", trust_remote_code=True, tensor_parallel_size=2, distributed_executor_backend='mp', gpu_memory_utilization=0.97)
+# parsers = [NERParser(prompt, config.TAG_START, config.TAG_END) for prompt in prompts]
+prompts = [generate_prompt(
+    category,
+    PromptType.ANNOTATE,
+    prompt
+) for prompt in inputs for category in entity_types]
 
-    tokenizer_data = build_vllm_token_enforcer_tokenizer_data(deepseek)
-    sampling_params = SamplingParams() # temperature=?, top_p=?, .max_tokens=?
+print(f'Prepared {len(prompts)} ANNOTATE prompts.')
 
+if config.MAX_ANNOTATE_PROMPTS > 0:
+    prompts = random.sample(prompts, config.MAX_ANNOTATE_PROMPTS)
+    print(f'Reduced to {config.MAX_ANNOTATE_PROMPTS} prompts.')
 
-    parsers = [NERParser(prompt, '@@', '##') for prompt in prompts]
-    prompts = [
-        f'''
-        I am an excellent linguist. The task is to label person entities in the given text. Below are some examples.
+print('Initializing Model...')
 
-        Input: I went ahead and decided to contact my son's mother.
-        Output: @@I## went ahead and decided to contact my @@son##'s @@mother##.
+deepseek = LLM(model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B", trust_remote_code=True, tensor_parallel_size=2, distributed_executor_backend='mp', gpu_memory_utilization=0.97)
 
-        Input: My favorite band is on tour and scheduled a show for Valentine's Day in a city near us.
-        Output: @@My## favorite band is on tour and scheduled a show for Valentine's Day in a city near us.
+tokenizer_data = build_vllm_token_enforcer_tokenizer_data(deepseek)
 
-        Input: I wasn't there because I was visiting friends in the Netherlands, but my mom and her sister spent time together, and it brought them closer.
-        Output: @@I## wasn't there because I was visiting @@friends## in the Netherlands, but my @@mom## and her @@sister## spent time together, and it brought them closer.
+tokenizer_data = build_vllm_token_enforcer_tokenizer_data(deepseek)
+sampling_params = [
+    SamplingParams( # temperature=?, top_p=?, .max_tokens=?
+        logits_processors = [build_vllm_logits_processor(
+            tokenizer_data,
+            parser
+        )]
+    ) for parser in parsers
+]
 
-        Input: {prompt}
-        Output: 
-        ''' for prompt in prompts
-    ]
+print('Performing Inference...')
+print(f'Test prompt: {prompts[0]}')
+results = deepseek.generate(prompts, sampling_params=sampling_params)
+print('============= Results ==============')
+j_res = [None] * len(results)
+for i in range(len(results)):
+    # print(result)
+    j_res[i] = dict(
+        input = inputs[i],
+        output = results[i].outputs[0].text
+    )
+    print(result.outputs[0].text)
 
-    tokenizer_data = build_vllm_token_enforcer_tokenizer_data(deepseek)
-    sampling_params = [
-        SamplingParams(
-            logits_processors = [build_vllm_logits_processor(
-                tokenizer_data,
-                parser
-            )]
-        ) for parser in parsers
-    ]
-
-
-    print('Performing Inference...')
-    print(f'Test prompt: {prompts[0]}')
-    results = deepseek.generate(prompts, sampling_params=sampling_params)
-    print('============= Results ==============')
-    for result in results:
-        # print(result)
-        print(result.outputs[0].text)
-    # print(results)
+with open(config.TAGGED_POSTS, "w") as json_file:
+    json.dump(j_res, json_file)
+# print(results)
