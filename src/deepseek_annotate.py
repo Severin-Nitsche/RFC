@@ -28,8 +28,8 @@ for post in posts:
 
 print(f'Extracted {len(inputs)} sentences.')
 
-if config.MAX_ANNOTATE_PROMPTS > 0:
-    inputs = random.sample(inputs, config.MAX_ANNOTATE_PROMPTS // len(entity_types))
+if config.MAX_PROMPTS > 0:
+    inputs = random.sample(inputs, config.MAX_PROMPTS // len(entity_types))
 
 parsers = [NERParser(prompt, config.TAG_START, config.TAG_END) for prompt in inputs for _ in entity_types]
 prompts = [generate_prompt(
@@ -56,19 +56,19 @@ sampling_params = [
     ) for parser in parsers
 ]
 
-print('Performing Inference...')
+print('Performing Annotation...')
 print(f'Test prompt: {prompts[0]}')
 results = deepseek.generate(prompts, sampling_params=sampling_params)
-print('============= Results ==============')
+print('Dumping...')
 j_res = [None] * len(results)
 for i in range(len(results)):
     # print(result)
     j_res[i] = dict(
         input = inputs[i],
         output = results[i].outputs[0].text,
-        tags = parse(inputs[i], results[i].outputs[0].text)
+        tags = parse(inputs[i], results[i].outputs[0].text),
+        type = entity_types[i % len(entity_types)]
     )
 
 with open(config.TAGGED_POSTS, "w") as json_file:
     json.dump(j_res, json_file)
-# print(results)
