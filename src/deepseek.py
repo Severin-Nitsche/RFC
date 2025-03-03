@@ -14,7 +14,7 @@ import json
 import random
 import tqdm
 
-from ner_parser import NERParser
+from ner_parser import NERParser, parse
 
 echr = preprocess(config.ECHR_DEV, lambda data: data['text'], 'echr')
 construct_examples(echr)
@@ -65,9 +65,9 @@ for i in range(len(results)):
     # print(result)
     j_res[i] = dict(
         input = inputs[i],
-        output = results[i].outputs[0].text
+        output = results[i].outputs[0].text,
+        tags = parse(inputs[i], results[i].outputs[0].text)
     )
-    print(result.outputs[0].text)
 
 with open(config.TAGGED_POSTS, "w") as json_file:
     json.dump(j_res, json_file)
