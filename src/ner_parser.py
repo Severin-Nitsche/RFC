@@ -1,6 +1,6 @@
 import config
 
-from lmformatenforcer import CharacterLevelParser, StringParser, SequenceParser, UnionParser
+# from lmformatenforcer import CharacterLevelParser, StringParser, SequenceParser, UnionParser
 from enum import Enum
 from typing import Optional
 
@@ -55,7 +55,7 @@ def step(state: ParserState, char: str) -> [(ParserState,ParserOutput)]:
     return results
     
 
-def parse(base: str, tagged: str, state: ParserState = None, res = []):
+def parse(base: str, tagged: str, state: ParserState = None, res = [], idx = 0):
     if state is None:
         state = (StateType.STRING, base, None)
     if len(state[1]) == 0:
@@ -66,10 +66,13 @@ def parse(base: str, tagged: str, state: ParserState = None, res = []):
         cp = []
         cp.extend(res)
         if result[1][0] == OutputType.TAG:
-            cp[-1] += result[1][1]
+            cp[-1]['tag'] += result[1][1]
         elif result[1][0] == OutputType.NEW_TAG:
-            cp.append('')
-        new_res = parse(base, tagged[1:], result[0], cp)
+            cp.append({
+                'tag': '',
+                'pos': idx
+            })
+        new_res = parse(base, tagged[1:], result[0], cp, idx + 1)
         if new_res is not None:
             return new_res
     return None

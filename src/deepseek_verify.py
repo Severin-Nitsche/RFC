@@ -4,58 +4,52 @@ if not __name__ == '__main__':
 # Credit to https://michaelwornow.net/2024/01/09/lm-format-enforcer-demo
 import config
 
+from deepseek import deepseek
+
 from deepseek_types import PromptType
 from prompts import generate_prompt, entity_types, identifier_types, confidential_statuses, construct_examples
 
 from vllm import LLM, SamplingParams
-from vllm.sampling_params import GuidedDecodingParans
-import json
-import random
-import tqdm
+from vllm.sampling_params import GuidedDecodingParams
 
 from ner_parser import NERParser, parse
 
-inputs = []
+def _get_verify_inputs():
+    inputs = []
+    with open(config.TAGGED_POSTS, 'r', encoding='utf-8') as file:
+        inputs = json.load(file)
+    return inputs
 
-with open(config.TAGGED_POSTS, 'r', encoding='utf-8') as file:
-    inputs = json.load(file)
+def _get_verify_prompts_and_meta(inputs):
+    prompts = [generate_prompt(
+        annotation['category'],
+        PromptType.VERIFY,
+        annotation['input'],
+        tag['tag']
+    ) for annotation in inputs for tag in annotation['tags']]
+    meta = [dict(
+        id = annotation['id'],
+        input = annotation['input'],
+        tag = tag,
+        category = annotation['category']
+    ) for annotation in inputs for tag in annotation['tags']]
+    return prompts, meta
 
-print(f'Loaded {len(inputs)} tagged sentences.')
+def _get_verify_sampling_params(prompts, metas, model):
+    return SamplingParams(
+        guided_decoding = GuidedDecodingParans(choice=['yes', 'no']))
 
-prompts = [generate_prompt(
-    prompt.type,
-    PromptType.VERIFY,
-    prompt.input,
-    tag
-) for prompt in inputs for tag in prompt['tags']]
-
-print(f'Generated {len(prompts)} VERIFY prompts')
-
-print('Initializing Model...')
-
-deepseek = LLM(model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B", trust_remote_code=True, tensor_parallel_size=2, distributed_executor_backend='mp', gpu_memory_utilization=0.97)
-
-tokenizer_data = build_vllm_token_enforcer_tokenizer_data(deepseek)
-
-tokenizer_data = build_vllm_token_enforcer_tokenizer_data(deepseek)
-sampling_params = SamplingParams( # temperature=?, top_p=?, .max_tokens=?
-    guided_decoding = GuidedDecodingParams(choice=['yes','no'])
-)
-
-print('Performing Verification...')
-print(f'Test prompt: {prompts[0]}')
-results = deepseek.generate(prompts, sampling_params=sampling_params)
-print('Dumping...')
-j_res = [None] * len(results)
-i = 0
-for prompt in inputs for tag in prompt['tags']:
-    j_res[i] = dict(
-        input = prompt.input,
-        output = results[i].outputs[0].text,
-        tag = tag
+def _serialize_verify_result(result, meta):
+    return dict(
+        id = meta['id'],
+        input = meta['input'],
+        category = meta['category'],
+        tag = meta['tag'],
+        output = result.outputs[0].text
     )
-    i += 1
 
-with open(config.VERIFIED_POSTS, "w") as json_file:
-    json.dump(j_res, json_file)
-# print(results)
+deepseek(
+    _get_verify_inputs,
+    _get_verify_prompts_and_meta,
+    _get_verify_sampling_params,
+    config.VERIFIED_POSTS)
