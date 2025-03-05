@@ -1,6 +1,6 @@
 import config
 
-# from lmformatenforcer import CharacterLevelParser, StringParser, SequenceParser, UnionParser
+from lmformatenforcer import CharacterLevelParser, StringParser, SequenceParser, UnionParser
 from enum import Enum
 from typing import Optional
 

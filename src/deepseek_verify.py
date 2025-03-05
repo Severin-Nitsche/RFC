@@ -6,15 +6,19 @@ import config
 
 from deepseek import deepseek
 
+from data_manipulation import preprocess
+
 from deepseek_types import PromptType
 from prompts import generate_prompt, entity_types, identifier_types, confidential_statuses, construct_examples
 
-from vllm import LLM, SamplingParams
+from vllm import SamplingParams
 from vllm.sampling_params import GuidedDecodingParams
 
-from ner_parser import NERParser, parse
+import json
 
 def _get_verify_inputs():
+    echr = preprocess(config.ECHR_DEV, lambda data: data['text'], 'echr')
+    construct_examples(echr)
     inputs = []
     with open(config.TAGGED_POSTS, 'r', encoding='utf-8') as file:
         inputs = json.load(file)
@@ -31,7 +35,8 @@ def _get_verify_prompts_and_meta(inputs):
         id = annotation['id'],
         input = annotation['input'],
         tag = tag,
-        category = annotation['category']
+        category = annotation['category'],
+        offset = annotation['offset']
     ) for annotation in inputs for tag in annotation['tags']]
     return prompts, meta
 
@@ -45,6 +50,7 @@ def _serialize_verify_result(result, meta):
         input = meta['input'],
         category = meta['category'],
         tag = meta['tag'],
+        offset = annotation['offset'],
         output = result.outputs[0].text
     )
 
@@ -52,4 +58,5 @@ deepseek(
     _get_verify_inputs,
     _get_verify_prompts_and_meta,
     _get_verify_sampling_params,
-    config.VERIFIED_POSTS)
+    config.VERIFIED_POSTS,
+    _serialize_verify_result)

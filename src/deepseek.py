@@ -2,6 +2,7 @@ import config
 
 from vllm import LLM
 import random
+import json
 
 def deepseek(get_inputs, get_prompts_and_meta, get_sampling_params, save_file, serialize_result):
     inputs = get_inputs()
@@ -31,4 +32,4 @@ def deepseek(get_inputs, get_prompts_and_meta, get_sampling_params, save_file, s
     for i in range(len(results)):
         json_results[i] = serialize_result(results[i], meta[i])
     with open(save_file, 'w') as json_file:
-        json.dump(j_res, json_file)
+        json.dump(json_results, json_file)

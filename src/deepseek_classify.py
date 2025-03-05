@@ -4,30 +4,33 @@ if not __name__ == '__main__':
 # Credit to https://michaelwornow.net/2024/01/09/lm-format-enforcer-demo
 import config
 
+from deepseek import deepseek
+
+from data_manipulation import preprocess
+
 from deepseek_types import PromptType
 from prompts import generate_prompt, entity_types, identifier_types, confidential_statuses, construct_examples
 
-from vllm import LLM, SamplingParams
+from vllm import SamplingParams
 from vllm.sampling_params import GuidedDecodingParams
 import json
-import random
-import tqdm
-
-from ner_parser import NERParser, parse
 
 def _get_classify_inputs():
+    echr = preprocess(config.ECHR_DEV, lambda data: data['text'], 'echr')
+    construct_examples(echr)
     inputs = []
-
     with open(config.VERIFIED_POSTS, 'r', encoding='utf-8') as file:
         inputs = json.load(file)
+    return inputs
 
 def _get_classify_prompts_and_meta(inputs):
     transformed = dict()
     for annotation in inputs:
-        if transformed[annotation['id']] is None:
+        if annotation['id'] not in transformed:
             transformed[annotation['id']] = dict()
-        if transformed[annotation['id']][annotation['input']] is None:
+        if annotation['input'] not in transformed[annotation['id']]:
             transformed[annotation['id']][annotation['input']] = dict(
+                offset = annotation['offset'],
                 tags = [])
         if annotation['output'] == 'yes':
             transformed[annotation['id']][annotation['input']]['tags'].append(annotation['tag'])
@@ -36,13 +39,14 @@ def _get_classify_prompts_and_meta(inputs):
         PromptType.CLASSIFY,
         sent,
         tag['tag']
-    ) for id in transformed for sent in transformed['id'] for tag in transformed[id][sent]['tags'] for category in ['confidential_status', 'identifier_type']]
+    ) for id in transformed for sent in transformed[id] for tag in transformed[id][sent]['tags'] for category in ['confidential_status', 'identifier_type']]
     meta = [dict(
         id = id,
         input = sent,
         tag = tag,
-        category = category
-    ) for id in transformed for sent in transformed['id'] for tag in transformed[id][sent]['tags'] for category in ['confidential_status', 'identifier_type']]
+        category = category,
+        offset = transformed[id][sent]['offset']
+    ) for id in transformed for sent in transformed[id] for tag in transformed[id][sent]['tags'] for category in ['confidential_status', 'identifier_type']]
     return prompts, meta
 
 def _get_classify_sampling_params(prompts, metas, model):
@@ -58,10 +62,12 @@ def _serialize_classify_result(result, meta):
         input = meta['input'],
         category = meta['category'],
         tag = meta['tag'],
+        offset = meta['offset'],
         output = result.outputs[0].text)
 
 deepseek(
     _get_classify_inputs,
     _get_classify_prompts_and_meta,
     _get_classify_sampling_params,
-    config.CLASSIFIED_POSTS)
+    config.CLASSIFIED_POSTS,
+    _serialize_classify_result)
