@@ -34,6 +34,7 @@ ECHR_DEV = EXAMPLE_DIR + '/echr_dev.json'
 TAGGED_POSTS = OUT_DIR + '/tagged_posts.json'
 VERIFIED_POSTS = OUT_DIR + '/verified_posts.json'
 CLASSIFIED_POSTS = OUT_DIR + '/classified_posts.json'
+CONVERTED_POSTS = OUT_DIR + '/converted_posts.json'
 
 ANNOTATE_EXAMPLE = TEMPLATE_DIR + '/ANNOTATE_EXAMPLE.tmpl'
 ANNOTATE = TEMPLATE_DIR + '/ANNOTATE.tmpl'
