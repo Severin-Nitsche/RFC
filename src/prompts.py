@@ -1,22 +1,33 @@
 import config
 
-from deepseek_types import PromptType, Example, PromptInfo
-from data_manipulation import preprocess, process_echr
+from deepseek_types import PromptType, Example, PromptInfo, ShotType
+from data_manipulation import process_echr, annotate
 
 from typing import Optional
 from string import Template
 import random
+import json
 
 prompt_template = dict()
 
-with open(config.ANNOTATE, 'r') as annotate_file:
-    prompt_template[PromptType.ANNOTATE] = Template(annotate_file.read())
-
-with open(config.CLASSIFY, 'r') as classify_file:
-    prompt_template[PromptType.CLASSIFY] = Template(classify_file.read())
-
-with open(config.VERIFY, 'r') as verify_file:
-    prompt_template[PromptType.VERIFY] = Template(verify_file.read())
+with open(config.ANNOTATE, 'r') as annotate_file,\
+    open(config.ANNOTATE_EXAMPLE, 'r') as annotate_example,\
+    open(config.CLASSIFY, 'r') as classify,\
+    open(config.CLASSIFY_EXAMPLE, 'r') as classify_example,\
+    open(config.VERIFY, 'r') as verify,\
+    open(config.VERIFY_EXAMPLE, 'r') as verify_example:
+    prompt_template[PromptType.ANNOTATE] = dict(
+        base = Template(annotate_file.read()),
+        example = Template(annotate_example.read())
+    )
+    prompt_template[PromptType.CLASSIFY] = dict(
+        base = Template(classify.read()),
+        example = Template(classify_example.read())
+    )
+    prompt_template[PromptType.VERIFY] = dict(
+        base = Template(verify.read()),
+        example = Template(verify_example.read())
+    )
 
 entity_types = ['PERSON', 'CODE', 'LOC', 'ORG', 'DEM', 'DATETIME', 'QUANTITY', 'MISC']
 identifier_types = ['DIRECT_ID', 'QUASI_ID', 'NO_MASK']
@@ -35,16 +46,18 @@ explanations = {
     'confidential_status': 'BELIEF refers to Religious or philosophical beliefs\nPOLITICS refers to Political opinions, trade union membership\nSEX refers to Sexual orientation or sex life\nETHNIC refers to Racial or ethnic origin\nHEALTH refers to Health, genetic and biometric data. This includes sensitive health-related habits, such as substance abuse\nNOT_CONFIDENTIAL refers to Not confidential information (most entities)'
 }
 
-examples = {}
+echr = None
+with open(config.ECHR_DEV, 'r', encoding='utf-8') as file:
+    echr = json.load(file)
 
-def construct_examples(echr):
-    global examples
-    examples['annotate']= dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types))
-    examples['verify'] = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types))
-    examples['classify'] = {
+examples = dict(
+    annotate = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types)),
+    verify = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types)),
+    classify = {
         'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
         'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
     }
+)
 
 def get_info(category: str, prompt_type: PromptType, example_is_undesired, options: Optional[str]=None, examples: dict=examples, explanation: dict=explanations, num_examples: int=3, max_try: int=42):
     info = PromptInfo(prompt_type, category, explanation[category], [None]*num_examples, options)
@@ -63,54 +76,81 @@ annotate_default = lambda example, _: example.output == example.input
 
 optionify = lambda options: ', '.join(options)
 
-def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, prompt_entity: str=None):
+def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, prompt_entity: str=None, prompt_entity_start: int=0, shots: ShotType=ShotType.FEW_SHOT):
     if not prompt_type in PromptType:
         raise ValueError(f"Expected PromptType, got '{prompt_type}'")
 
-    def _info_to_dict(info):
-        res = dict(
-            prompt_type = info.prompt_type,
-            category = info.category,
-            explanation = info.explanation,
-            options = info.options,
-            prompt_input = prompt_input,
-            prompt_entity = prompt_entity
-        )
-        for i in range(len(info.example)):
-            res[f'example_{i}_input'] = info.example[i].input
-            res[f'example_{i}_output'] = info.example[i].output
-            res[f'example_{i}_entity'] = info.example[i].entity
-        return res
+    def _substitute(base_template: Template, example_template: Template, info: PromptInfo):
+        substituted = [base_template.substitute(info)]
+        for example in info.example:
+            substituted.append(example_template.substitute({**info, **example}))
+        substituted.append(example_template.substitute(
+            info, 
+            input = annotate(prompt_input, [dict(
+                start_offset = prompt_entity_start,
+                end_offset = prompt_entity_start+len(prompt_entity)
+            )]) if prompt_entity is not None else prompt_input,
+            entity = prompt_entity,
+            output = ''))
+        return "\n\n".join(substituted)
 
     if prompt_type == PromptType.ANNOTATE:
-        return prompt_template[prompt_type].substitute(_info_to_dict(
-            get_info(category, prompt_type, annotate_default)
-        ))
+        return _substitute(
+            prompt_template[prompt_type]['base'],
+            prompt_template[prompt_type]['example'],
+            get_info(category, prompt_type, annotate_default, num_examples=(shots*shots + shots) // 2)
+        )
     elif prompt_type == PromptType.CLASSIFY:
         if category == 'confidential_status':
-            return prompt_template[prompt_type].substitute(_info_to_dict(get_info(
-                category, 
-                prompt_type, 
-                confidential_status_default, 
-                optionify(confidential_statuses)
-            )))
+            return _substitute(
+                prompt_template[prompt_type]['base'],
+                prompt_template[prompt_type]['example'],
+                get_info(
+                    category, 
+                    prompt_type, 
+                    confidential_status_default, 
+                    optionify(confidential_statuses),
+                    num_examples=(shots*shots + shots) // 2
+                )
+            )
         elif category == 'identifier_type':
-            return prompt_template[prompt_type].substitute(_info_to_dict(get_info(
-                category, 
-                prompt_type, 
-                identifier_type_default, 
-                optionify(identifier_types)
-            )))
+            return _substitute(
+                prompt_template[prompt_type]['base'],
+                prompt_template[prompt_type]['example'],
+                get_info(
+                    category, 
+                    prompt_type, 
+                    identifier_type_default, 
+                    optionify(identifier_types),
+                    num_examples=(shots*shots + shots) // 2
+                )
+            )
         else:
             raise ValueError(f'Unknown category for prompt type {prompt_type}: {category}')
     elif prompt_type == PromptType.VERIFY:
-        return prompt_template[prompt_type].substitute(_info_to_dict(
-            get_info(category, prompt_type, verify_default, num_examples=2)
-        ))
+        return _substitute(
+            prompt_template[prompt_type]['base'],
+            prompt_template[prompt_type]['example'],
+            get_info(category, prompt_type, verify_default, num_examples=shots)
+        )
 
 # print('====== Annotate =======')
-# print(generate_prompt('PERSON', PromptType.ANNOTATE,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.'))
+# print(generate_prompt(
+#     'PERSON', 
+#     PromptType.ANNOTATE,
+#     'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
+#     shots=ShotType.ZERO_SHOT))
 # print('====== Classify =======')
-# print(generate_prompt('confidential_status', PromptType.CLASSIFY,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.', 'Maria'))
+# print(generate_prompt(
+#     'confidential_status', 
+#     PromptType.CLASSIFY,
+#     'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.', 
+#     'Maria', 109,
+#     ShotType.ONE_SHOT))
 # print('====== Verify =======')
-# print(generate_prompt('CODE', PromptType.VERIFY,'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.','dad'))
+# print(generate_prompt(
+#     'CODE', 
+#     PromptType.VERIFY,
+#     'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
+#     'dad', 66,
+#     ShotType.FEW_SHOT))
