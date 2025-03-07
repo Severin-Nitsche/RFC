@@ -30,7 +30,7 @@ TEMPLATE_DIR = './templates'
 TAG_START = '@@'
 TAG_END = '##'
 
-ECHR_DEV = EXAMPLE_DIR + '/echr_dev.json'
+ECHR = EXAMPLE_DIR + '/echr_train.json'
 TAGGED_POSTS = OUT_DIR + '/tagged_posts.json'
 VERIFIED_POSTS = OUT_DIR + '/verified_posts.json'
 CLASSIFIED_POSTS = OUT_DIR + '/classified_posts.json'
@@ -54,3 +54,6 @@ else:
     os.environ['HF_HOME'] = HPC_WORK + CACHE_DIR
     # Make sure to import this before huggingface (otherwise HF_HOME will have no effect)
 os.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'
+
+# TAB
+MODEL = OUT_DIR + '/long_model.pt'

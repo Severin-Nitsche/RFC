@@ -1,7 +1,7 @@
 import praw
 import json
 
-import config
+from . import config
 
 # Get instance of reddit api
 reddit = praw.Reddit(

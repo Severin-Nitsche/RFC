@@ -6,7 +6,7 @@ import json
 import spacy
 import tqdm
 
-import config
+from . import config
 
 # you can view all available checkpoints by calling available_checkpoints()
 # checkpoint_map = available_checkpoints()
