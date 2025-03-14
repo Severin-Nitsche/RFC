@@ -1,6 +1,6 @@
 from .. import config
 
-from deepseek_types import PromptType, Example, PromptInfo
+from .deepseek_types import PromptType, Example, PromptInfo
 
 import json
 # from nlp import nlp

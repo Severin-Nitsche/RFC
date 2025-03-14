@@ -9,6 +9,7 @@ from .deepseek import deepseek
 from .deepseek_types import PromptType
 from .prompts import generate_prompt, entity_types, identifier_types, confidential_statuses
 
+from vllm import SamplingParams
 from lmformatenforcer.integrations.vllm import build_vllm_logits_processor, build_vllm_token_enforcer_tokenizer_data
 
 from .ner_parser import NERParser, parse
@@ -37,6 +38,10 @@ def _get_annotate_prompts_and_meta(inputs):
 def _get_annotate_sampling_params(prompts, metas, model):
     tokenizer_data = build_vllm_token_enforcer_tokenizer_data(model)
     return [SamplingParams(
+        max_tokens = 1024,
+        top_p = 1.0,
+        top_k = -1,
+        min_p = 0,
         logits_processors = [build_vllm_logits_processor(
             tokenizer_data,
             NERParser(

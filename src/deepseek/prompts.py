@@ -50,14 +50,17 @@ echr = None
 with open(config.ECHR, 'r', encoding='utf-8') as file:
     echr = json.load(file)
 
-examples = dict(
-    annotate = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types)),
-    verify = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types)),
-    classify = {
-        'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
-        'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
-    }
-)
+if config.SHOTS > 0:
+    examples = dict(
+        annotate = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.ANNOTATE, entity_type)), entity_types)),
+        verify = dict(map(lambda entity_type: (entity_type, process_echr(echr, PromptType.VERIFY, entity_type)), entity_types)),
+        classify = {
+            'identifier_type': process_echr(echr, PromptType.CLASSIFY, 'identifier_type'),
+            'confidential_status': process_echr(echr, PromptType.CLASSIFY, 'confidential_status')
+        }
+    )
+else:
+    examples = dict()
 
 def get_info(category: str, prompt_type: PromptType, example_is_undesired, options: Optional[str]=None, examples: dict=examples, explanation: dict=explanations, num_examples: int=3, max_try: int=42):
     info = PromptInfo(prompt_type, category, explanation[category], [None]*num_examples, options)
