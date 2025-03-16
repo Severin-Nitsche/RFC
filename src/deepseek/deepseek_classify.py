@@ -20,29 +20,25 @@ def _get_classify_inputs():
     return inputs
 
 def _get_classify_prompts_and_meta(inputs):
-    transformed = dict()
-    for annotation in inputs:
-        if annotation['id'] not in transformed:
-            transformed[annotation['id']] = dict(
-                input = annotation['input'],
-                tags = []
-            )
-        if annotation['output'] == 'yes':
-            transformed[annotation['id']]['tags'].append(annotation['tag'])
+    annotations = filter(
+        lambda annotation: annotation['output'] == 'yes',
+        inputs
+    )
     prompts = [generate_prompt(
         category,
         PromptType.CLASSIFY,
-        transformed[id],
-        tag['tag'],
-        tag['pos'],
+        annotation['input'],
+        annotation['tag']['tag'],
+        annotation['tag']['pos'],
         shots=config.SHOTS
-    ) for id in transformed for tag in transformed[id]['tags'] for category in ['confidential_status', 'identifier_type']]
+    ) for annotation in annotations for category in ['confidential_status', 'identifier_type']]
     meta = [dict(
         id = id,
-        input = transformed[id]['input'],
-        tag = tag,
+        input = annotation['input'],
+        offset = annotation['offset'],
+        tag = annotation['tag'],
         category = category
-    ) for id in transformed for tag in transformed[id]['tags'] for category in ['confidential_status', 'identifier_type']]
+    ) for annotation in annotations for category in ['confidential_status', 'identifier_type']]
     return prompts, meta
 
 def _get_classify_sampling_params(prompts, metas, model):
@@ -56,6 +52,7 @@ def _serialize_classify_result(result, meta):
     return dict(
         id = meta['id'],
         input = meta['input'],
+        offset = meta['offset'],
         category = meta['category'],
         tag = meta['tag'],
         output = result.outputs[0].text)

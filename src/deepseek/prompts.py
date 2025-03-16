@@ -1,7 +1,7 @@
 from .. import config
 
 from .deepseek_types import PromptType, Example, PromptInfo, ShotType
-from .data_manipulation import process_echr, annotate
+from .data_manipulation import process_echr, annotate, preprocess
 
 from typing import Optional
 from string import Template
@@ -46,9 +46,7 @@ explanations = {
     'confidential_status': 'BELIEF refers to Religious or philosophical beliefs\nPOLITICS refers to Political opinions, trade union membership\nSEX refers to Sexual orientation or sex life\nETHNIC refers to Racial or ethnic origin\nHEALTH refers to Health, genetic and biometric data. This includes sensitive health-related habits, such as substance abuse\nNOT_CONFIDENTIAL refers to Not confidential information (most entities)'
 }
 
-echr = None
-with open(config.ECHR, 'r', encoding='utf-8') as file:
-    echr = json.load(file)
+echr = preprocess(config.ECHR, lambda data: data['text'], 'echr')
 
 if config.SHOTS > 0:
     examples = dict(
@@ -137,12 +135,12 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
             get_info(category, prompt_type, verify_default, num_examples=shots)
         )
 
-# print('====== Annotate =======')
-# print(generate_prompt(
-#     'PERSON', 
-#     PromptType.ANNOTATE,
-#     'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
-#     shots=ShotType.ZERO_SHOT))
+print('====== Annotate =======')
+print(generate_prompt(
+    'PERSON', 
+    PromptType.ANNOTATE,
+    'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
+    shots=ShotType.ONE_SHOT))
 # print('====== Classify =======')
 # print(generate_prompt(
 #     'confidential_status', 

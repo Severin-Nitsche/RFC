@@ -12,27 +12,26 @@ from .prompts import generate_prompt, entity_types, identifier_types, confidenti
 from vllm import SamplingParams
 from lmformatenforcer.integrations.vllm import build_vllm_logits_processor, build_vllm_token_enforcer_tokenizer_data
 
+from .data_manipulation import preprocess
 from .ner_parser import NERParser, parse
 import json
 
 def _get_annotate_inputs():
-    inputs = []
-    with open(config.REDDIT_POSTS, 'r') as file:
-        inputs = json.load(file)
-    return inputs
+    return preprocess(config.REDDIT_POSTS, lambda post: post['data']['text'], 'posts')
 
 def _get_annotate_prompts_and_meta(inputs):
     prompts = [generate_prompt(
         category,
         PromptType.ANNOTATE,
-        post['data']['text'],
+        sent.text,
         shots=config.SHOTS
-    ) for post in inputs for category in entity_types]
+    ) for post in inputs for category in entity_types for sent in post['nlp'].doc.sents]
     meta = [dict(
         id = post['id'],
-        input = post['data']['text'],
+        offset = sent.start_char,
+        input = sent.text,
         category = category
-    ) for post in inputs for category in entity_types]
+    ) for post in inputs for category in entity_types for sent in post['nlp'].doc.sents]
     return prompts, meta
 
 def _get_annotate_sampling_params(prompts, metas, model):
@@ -55,6 +54,7 @@ def _serialize_annotate_result(result, meta):
     return dict(
         id = meta['id'],
         input = meta['input'],
+        offset = meta['offset'],
         category = meta['category'],
         tags = parse(meta['input'], result.outputs[0].text)
     )

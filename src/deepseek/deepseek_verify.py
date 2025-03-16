@@ -31,6 +31,7 @@ def _get_verify_prompts_and_meta(inputs):
     ) for annotation in inputs for tag in annotation['tags']]
     meta = [dict(
         id = annotation['id'],
+        offset = annotation['offset'],
         input = annotation['input'],
         tag = tag,
         category = annotation['category']
@@ -45,6 +46,7 @@ def _serialize_verify_result(result, meta):
     return dict(
         id = meta['id'],
         input = meta['input'],
+        offset = meta['offset'],
         category = meta['category'],
         tag = meta['tag'],
         output = result.outputs[0].text

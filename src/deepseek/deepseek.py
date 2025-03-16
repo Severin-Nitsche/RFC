@@ -10,6 +10,7 @@ def deepseek(get_inputs, get_prompts_and_meta, get_sampling_params, save_file, s
 
     prompts, meta = get_prompts_and_meta(inputs)
     print(f'Generated {len(prompts)} prompts')
+    print(f'A prompt: {random.choice(prompts)}')
 
     print('Initializing Model...')
     deepseek = LLM(model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B", trust_remote_code=True,  tensor_parallel_size=2, distributed_executor_backend='ray', gpu_memory_utilization=0.97)
@@ -17,7 +18,6 @@ def deepseek(get_inputs, get_prompts_and_meta, get_sampling_params, save_file, s
     sampling_params = get_sampling_params(prompts, meta, deepseek)
 
     print('Performing Inference...')
-    print(f'A prompt: {random.choice(prompts)}')
     results = deepseek.generate(
         prompts,
         sampling_params = sampling_params)
