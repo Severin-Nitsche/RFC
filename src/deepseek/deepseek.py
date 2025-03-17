@@ -18,13 +18,15 @@ def deepseek(get_inputs, get_prompts_and_meta, get_sampling_params, save_file, s
     sampling_params = get_sampling_params(prompts, meta, deepseek)
 
     print('Performing Inference...')
-    results = deepseek.generate(
+    results = deepseek.chat(
         prompts,
-        sampling_params = sampling_params)
+        sampling_params = sampling_params
+    )
 
     print(f'Saving to {save_file}...')
     json_results = [None] * len(results)
     for i in range(len(results)):
+        print(results[i])
         json_results[i] = serialize_result(results[i], meta[i])
     with open(save_file, 'w') as json_file:
         json.dump(json_results, json_file)

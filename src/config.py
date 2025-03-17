@@ -43,7 +43,7 @@ CLASSIFY = TEMPLATE_DIR + '/CLASSIFY.tmpl'
 VERIFY_EXAMPLE = TEMPLATE_DIR + '/VERIFY_EXAMPLE.tmpl'
 VERIFY = TEMPLATE_DIR + '/VERIFY.tmpl'
 
-SHOTS = 2 # 0 - Zero Shot, 1 - One Shot, 2 - Few Shot
+SHOTS = 1 # 0 - Zero Shot, 1 - One Shot, 2 - Few Shot
 
 HPC_WORK = os.getenv("HPCWORK")
 CACHE_DIR = '/cache'
