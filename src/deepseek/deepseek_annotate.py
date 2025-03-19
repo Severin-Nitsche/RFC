@@ -13,7 +13,7 @@ from vllm import SamplingParams
 from vllm.sampling_params import GuidedDecodingParams
 
 from .data_manipulation import preprocess
-from .ner_parser import parse
+from .parser import parse
 from .grammar import construct_grammar
 import json
 
@@ -21,21 +21,22 @@ def _get_annotate_inputs():
     return preprocess(config.REDDIT_POSTS, lambda post: post['data']['text'], 'posts')
 
 def _get_annotate_prompts_and_meta(inputs):
-    prompts = [[{
-        'role': 'user',
-        'content': generate_prompt(
-            category,
-            PromptType.ANNOTATE,
-            sent.text,
-            shots=config.SHOTS
-        )
-    }] for post in inputs for category in entity_types for sent in post['nlp'].doc.sents]
+    prompts = [generate_prompt(
+        category,
+        PromptType.ANNOTATE,
+        sent.text,
+        shots=config.SHOTS
+    ) for post in inputs 
+        for category in entity_types 
+            for sent in post['nlp'].doc.sents]
     meta = [dict(
         id = post['id'],
         offset = sent.start_char,
         input = sent.text,
         category = category
-    ) for post in inputs for category in entity_types for sent in post['nlp'].doc.sents]
+    ) for post in inputs 
+        for category in entity_types 
+            for sent in post['nlp'].doc.sents]
     return prompts, meta
 
 def _get_annotate_sampling_params(prompts, metas, model):

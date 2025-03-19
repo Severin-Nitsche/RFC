@@ -135,12 +135,12 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
             get_info(category, prompt_type, verify_default, num_examples=shots)
         )
 
-print('====== Annotate =======')
-print(generate_prompt(
-    'PERSON', 
-    PromptType.ANNOTATE,
-    'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
-    shots=ShotType.ONE_SHOT))
+# print('====== Annotate =======')
+# print(generate_prompt(
+#     'PERSON', 
+#     PromptType.ANNOTATE,
+#     'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
+#     shots=ShotType.ONE_SHOT))
 # print('====== Classify =======')
 # print(generate_prompt(
 #     'confidential_status', 

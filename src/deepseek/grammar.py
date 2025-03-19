@@ -14,7 +14,7 @@ def construct_grammar(text: str, tag_start: str, tag_end: str):
   """
   # Convert characters to Unicode escape sequences
   def to_unicode_escape(char):
-    return f'\\U{ord(char):08X}'
+    return rf'\U{ord(char):08X}'
   # We need to escape the tags
   tag_start = "".join(to_unicode_escape(c) for c in tag_start) 
   tag_end = "".join(to_unicode_escape(c) for c in tag_end)
@@ -29,5 +29,5 @@ def construct_grammar(text: str, tag_start: str, tag_end: str):
     else:
       rules.append(f'o-{i} ::= "{char}"')
       rules.append(f'i-{i} ::= "{char}" "{tag_end}"')
-  rules.append('root ::= o-0')
+  rules.append(rf"""root ::= [a-zA-z \"'.,\t\n{tag_start}{tag_end}]* "</think>" (o-0 | ("{tag_start}" i-0))""")
   return "\n".join(rules)
