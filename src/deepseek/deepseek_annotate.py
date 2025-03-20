@@ -57,7 +57,7 @@ def _serialize_annotate_result(result, meta):
         offset = meta['offset'],
         category = meta['category'],
         output = result.outputs[0].text
-        # tags = parse(meta['input'], result.outputs[0].text)
+        # tags = parse(result.outputs[0].text, meta['input'])
     )
 
 deepseek(
