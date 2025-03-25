@@ -17,6 +17,9 @@ def parse(tagged: str, base: str, tag_start: str = config.TAG_START, tag_end: st
   match = re.search(r".*</think>", tagged, re.DOTALL)
   if match:
     tagged = tagged[match.end():]
+  else:
+    print("Thinking incomplete...")
+    return []
   # We do not need the tag strings
   # But it is easier if we have them
   # We assume flat tagging because we force the generation this way
@@ -26,7 +29,12 @@ def parse(tagged: str, base: str, tag_start: str = config.TAG_START, tag_end: st
   tag = False
   tagged_idx = 0
   for base_idx, base_char in enumerate(base):
-    tagged_char = tagged[tagged_idx]
+    try:
+      tagged_char = tagged[tagged_idx]
+    except:
+      print(tagged_idx, base_idx, base_char)
+      print(tagged,base)
+      break;
     if tagged_char == base_char:
       if tag:
         tags[-1]['tag'] += tagged_char

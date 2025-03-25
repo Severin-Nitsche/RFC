@@ -67,7 +67,7 @@ def process_echr(echr, prompt_type: PromptType, category):
             data['annotations'][annotator]['entity_mentions']
           )
       # Save the annotations in a list bc the next filter kills them otherwise
-      annotations_ = list(annotations_)
+      annotations_ = list(map(dict, annotations_))
       for sent in data['nlp'].doc.sents:
         # At this point we filter the annotations regarding offsets
         annotations = filter(

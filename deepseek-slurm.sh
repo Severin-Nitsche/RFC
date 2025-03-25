@@ -3,7 +3,7 @@
 #SBATCH --job-name=annotate
 #SBATCH --output=annotate_%J.txt
 #SBATCH --partition=c23g
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --mem-per-cpu=120G
 
 #SBATCH --time=02:00:00
@@ -15,4 +15,4 @@ ml load Python/3.12.3
 cd /home/ll464721/RFC
 echo "JOB ID: $SLURM_JOB_ID"
 source venv/deepseek/bin/activate
-python -m src.deepseek.deepseek_annotate
+python -m src.deepseek.runner

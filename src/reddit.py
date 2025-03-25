@@ -3,6 +3,8 @@ import json
 
 from . import config
 
+import random
+
 # Get instance of reddit api
 reddit = praw.Reddit(
     client_id=config.CLIENT_ID,
@@ -33,4 +35,4 @@ for submission in reddit.subreddit("relationship_advice").hot(limit=50):
 
 # Save the dictionary to a JSON file
 with open(config.REDDIT_POSTS, "w") as json_file:
-    json.dump(posts, json_file)
+    json.dump([random.choice(posts)], json_file)

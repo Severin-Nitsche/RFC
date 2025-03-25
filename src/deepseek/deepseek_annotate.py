@@ -1,10 +1,5 @@
-if not __name__ == '__main__':
-    exit(0)
-
 # Credit to https://michaelwornow.net/2024/01/09/lm-format-enforcer-demo
 from .. import config
-
-from .deepseek import deepseek
 
 from .deepseek_types import PromptType
 from .prompts import generate_prompt, entity_types, identifier_types, confidential_statuses
@@ -17,10 +12,10 @@ from .parser import parse
 from .grammar import construct_grammar
 import json
 
-def _get_annotate_inputs():
+def get_annotate_inputs():
     return preprocess(config.REDDIT_POSTS, lambda post: post['data']['text'], 'posts')
 
-def _get_annotate_prompts_and_meta(inputs):
+def get_annotate_prompts_and_meta(inputs):
     prompts = [generate_prompt(
         category,
         PromptType.ANNOTATE,
@@ -39,7 +34,7 @@ def _get_annotate_prompts_and_meta(inputs):
             for sent in post['nlp'].doc.sents]
     return prompts, meta
 
-def _get_annotate_sampling_params(prompts, metas, model):
+def get_annotate_sampling_params(prompts, metas, model):
     return [SamplingParams(
         max_tokens = 1024,
         top_p = 1.0,
@@ -50,19 +45,12 @@ def _get_annotate_sampling_params(prompts, metas, model):
         )
     ) for meta in metas]
 
-def _serialize_annotate_result(result, meta):
+def serialize_annotate_result(result, meta):
     return dict(
         id = meta['id'],
         input = meta['input'],
         offset = meta['offset'],
         category = meta['category'],
-        output = result.outputs[0].text
-        # tags = parse(result.outputs[0].text, meta['input'])
+        output = result.outputs[0].text,
+        tags = parse(result.outputs[0].text, meta['input'])
     )
-
-deepseek(
-    _get_annotate_inputs,
-    _get_annotate_prompts_and_meta,
-    _get_annotate_sampling_params,
-    config.TAGGED_POSTS,
-    _serialize_annotate_result)

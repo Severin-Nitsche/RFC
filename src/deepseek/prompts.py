@@ -135,23 +135,23 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
             get_info(category, prompt_type, verify_default, num_examples=shots)
         )
 
-# print('====== Annotate =======')
-# print(generate_prompt(
-#     'PERSON', 
-#     PromptType.ANNOTATE,
-#     'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
-#     shots=ShotType.ONE_SHOT))
-# print('====== Classify =======')
-# print(generate_prompt(
-#     'confidential_status', 
-#     PromptType.CLASSIFY,
-#     'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.', 
-#     'Maria', 109,
-#     ShotType.ONE_SHOT))
-# print('====== Verify =======')
-# print(generate_prompt(
-#     'CODE', 
-#     PromptType.VERIFY,
-#     'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
-#     'dad', 66,
-#     ShotType.FEW_SHOT))
+print('====== Annotate =======')
+print(generate_prompt(
+    'PERSON', 
+    PromptType.ANNOTATE,
+    'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
+    shots=ShotType.ONE_SHOT))
+print('====== Classify =======')
+print(generate_prompt(
+    'confidential_status', 
+    PromptType.CLASSIFY,
+    'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.', 
+    'Maria', 109,
+    ShotType.ONE_SHOT))
+print('====== Verify =======')
+print(generate_prompt(
+    'CODE', 
+    PromptType.VERIFY,
+    'He has moved out on his own but still keeps some contact with his dad, mainly because he wants to wait until Maria leaves before cutting ties completely.',
+    'dad', 66,
+    ShotType.FEW_SHOT))

@@ -43,5 +43,5 @@ def construct_grammar(text: str, tag_start: str, tag_end: str):
     else:
       rules.append(f'o-{i} ::= "{word}"')
       rules.append(f'i-{i} ::= "{word}" "{tag_end}"')
-  rules.append(rf"""root ::= [a-zA-z0-9 \"'.,\t\n{additional}]{{0,{4096-len(text)*2}}} "</think>" (o-0 | ("{tag_start}" i-0))""")
+  rules.append(rf"""root ::= [a-zA-z0-9 \"'.,\t\n{additional}]* "</think>" (o-0 | ("{tag_start}" i-0))""")
   return "\n".join(rules)
