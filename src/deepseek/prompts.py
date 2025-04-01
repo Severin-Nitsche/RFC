@@ -12,21 +12,27 @@ prompt_template = dict()
 
 with open(config.ANNOTATE, 'r') as annotate_file,\
     open(config.ANNOTATE_EXAMPLE, 'r') as annotate_example,\
+    open(config.ANNOTATE_TASK, 'r') as annotate_task,\
     open(config.CLASSIFY, 'r') as classify,\
     open(config.CLASSIFY_EXAMPLE, 'r') as classify_example,\
+    open(config.CLASSIFY_TASK, 'r') as classify_task,\
     open(config.VERIFY, 'r') as verify,\
-    open(config.VERIFY_EXAMPLE, 'r') as verify_example:
+    open(config.VERIFY_EXAMPLE, 'r') as verify_example,\
+    open(config.VERIFY_TASK, 'r') as verify_task:
     prompt_template[PromptType.ANNOTATE] = dict(
         base = Template(annotate_file.read()),
-        example = Template(annotate_example.read())
+        example = Template(annotate_example.read()),
+        task = Template(annotate_task.read())
     )
     prompt_template[PromptType.CLASSIFY] = dict(
         base = Template(classify.read()),
-        example = Template(classify_example.read())
+        example = Template(classify_example.read()),
+        task = Template(classify_task.read())
     )
     prompt_template[PromptType.VERIFY] = dict(
         base = Template(verify.read()),
-        example = Template(verify_example.read())
+        example = Template(verify_example.read()),
+        task = Template(verify_task.read())
     )
 
 entity_types = ['PERSON', 'CODE', 'LOC', 'ORG', 'DEM', 'DATETIME', 'QUANTITY', 'MISC']
@@ -81,16 +87,17 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
     if not prompt_type in PromptType:
         raise ValueError(f"Expected PromptType, got '{prompt_type}'")
 
-    def _substitute(base_template: Template, example_template: Template, info: PromptInfo):
+    def _substitute(base_template: Template, example_template: Template, task_template: Template, info: PromptInfo):
         substituted = [base_template.substitute(info)]
         for example in info.example:
             substituted.append(example_template.substitute({**info, **example}))
+        substituted.append(task_template.substitute({**info, **example}))
         substituted.append(example_template.substitute(
             info, 
-            input = annotate(prompt_input, [dict(
+            input = (annotate(prompt_input, [dict(
                 start_offset = prompt_entity_start,
                 end_offset = prompt_entity_start+len(prompt_entity)
-            )]) if prompt_entity is not None else prompt_input,
+            )]) if prompt_entity is not None else prompt_input).rstrip(),
             entity = prompt_entity,
             output = ''))
         return "\n\n".join(substituted)
@@ -99,6 +106,7 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
         return _substitute(
             prompt_template[prompt_type]['base'],
             prompt_template[prompt_type]['example'],
+            prompt_template[prompt_type]['task'],
             get_info(category, prompt_type, annotate_default, num_examples=(shots*shots + shots) // 2)
         )
     elif prompt_type == PromptType.CLASSIFY:
@@ -106,6 +114,7 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
             return _substitute(
                 prompt_template[prompt_type]['base'],
                 prompt_template[prompt_type]['example'],
+                prompt_template[prompt_type]['task'],
                 get_info(
                     category, 
                     prompt_type, 
@@ -118,6 +127,7 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
             return _substitute(
                 prompt_template[prompt_type]['base'],
                 prompt_template[prompt_type]['example'],
+                prompt_template[prompt_type]['task'],
                 get_info(
                     category, 
                     prompt_type, 
@@ -132,6 +142,7 @@ def generate_prompt(category: str, prompt_type: PromptType, prompt_input: str, p
         return _substitute(
             prompt_template[prompt_type]['base'],
             prompt_template[prompt_type]['example'],
+            prompt_template[prompt_type]['task'],
             get_info(category, prompt_type, verify_default, num_examples=shots)
         )
 

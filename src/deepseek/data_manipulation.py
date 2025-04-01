@@ -92,8 +92,8 @@ def process_echr(echr, prompt_type: PromptType, category):
         if prompt_type == PromptType.ANNOTATE:
           if any(annotations):
             examples.append(Example(
-              input=sent.text, 
-              output=annotate(sent.text, annotations)
+              input=sent.text.strip(), 
+              output=annotate(sent.text, annotations).strip()
             ))
         else:
           for entity_mention in annotations:
@@ -103,7 +103,7 @@ def process_echr(echr, prompt_type: PromptType, category):
             elif prompt_type == PromptType.CLASSIFY:
               output = entity_mention[category]
             examples.append(Example(
-              input=annotate(sent.text, [entity_mention]),
+              input=annotate(sent.text, [entity_mention]).strip(),
               output=output,
               entity=sent.text[
                 entity_mention['start_offset']:entity_mention['end_offset']

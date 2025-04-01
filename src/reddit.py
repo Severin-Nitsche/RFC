@@ -25,7 +25,7 @@ def process(submission):
             }
         })
 
-for submission in reddit.subreddit("relationship_advice").hot(limit=50):
+for submission in reddit.subreddit("relationship_advice").new(limit=5):
     if submission.author is None: # Trust me, this case can happen
         continue
     process(submission)
@@ -35,4 +35,4 @@ for submission in reddit.subreddit("relationship_advice").hot(limit=50):
 
 # Save the dictionary to a JSON file
 with open(config.REDDIT_POSTS, "w") as json_file:
-    json.dump([random.choice(posts)], json_file)
+    json.dump(posts, json_file)

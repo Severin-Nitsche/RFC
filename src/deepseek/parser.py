@@ -2,6 +2,14 @@ from .. import config
 
 import re
 
+def pre_parse(text):
+  match = re.search(r".*</think>[\n]*", text, re.DOTALL)
+  if match:
+    return text[match.end():]
+  else:
+    print("Thinking incomplete...")
+    return None
+
 def parse(tagged: str, base: str, tag_start: str = config.TAG_START, tag_end: str = config.TAG_END):
   """
   This function extracts all tags from the tagged string.
@@ -14,12 +22,16 @@ def parse(tagged: str, base: str, tag_start: str = config.TAG_START, tag_end: st
     }
   """
   # First, we remove the think part
-  match = re.search(r".*</think>", tagged, re.DOTALL)
-  if match:
-    tagged = tagged[match.end():]
-  else:
-    print("Thinking incomplete...")
-    return []
+  # tagged = pre_parse(tagged)
+  # if tagged is None:
+  #   return []
+
+  # Dirty hack
+  l = len(base) - len(base.lstrip())
+  base = base.strip()
+  tagged = tagged.strip()
+  base = (' ' * l) + base
+  tagged = (' ' * l) + tagged
   # We do not need the tag strings
   # But it is easier if we have them
   # We assume flat tagging because we force the generation this way

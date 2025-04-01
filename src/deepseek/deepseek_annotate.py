@@ -11,9 +11,29 @@ from .data_manipulation import preprocess
 from .parser import parse
 from .grammar import construct_grammar
 import json
+import random
 
 def get_annotate_inputs():
     return preprocess(config.REDDIT_POSTS, lambda post: post['data']['text'], 'posts')
+
+def test_prompts(inputs):
+    post = random.choice(inputs)
+    sent = random.choice(list(post['nlp'].doc.sents))
+    prompts = [generate_prompt(
+        category,
+        PromptType.ANNOTATE,
+        sent.text,
+        shots=config.SHOTS
+    ) for category in entity_types]
+    meta = [dict(
+        id = post['id'],
+        offset = sent.start_char,
+        input = sent.text,
+        category = category
+    ) for category in entity_types]
+            
+    return prompts, meta
+
 
 def get_annotate_prompts_and_meta(inputs):
     prompts = [generate_prompt(
@@ -36,10 +56,7 @@ def get_annotate_prompts_and_meta(inputs):
 
 def get_annotate_sampling_params(prompts, metas, model):
     return [SamplingParams(
-        max_tokens = 1024,
-        top_p = 1.0,
-        top_k = -1,
-        min_p = 0,
+        max_tokens = 2048,
         guided_decoding=GuidedDecodingParams(
             grammar = construct_grammar(meta['input'], config.TAG_START, config.TAG_END)
         )

@@ -1,6 +1,7 @@
 from .. import config
 
 from vllm import LLM
+from vllm.sampling_params import SamplingParams, BeamSearchParams
 import random
 import json
 
@@ -35,14 +36,31 @@ def deepseek(get_inputs, get_prompts_and_meta, get_sampling_params, save_file, s
     sampling_params = get_sampling_params(prompts, meta, deepseek)
 
     print('Performing Inference...')
-    results = deepseek.chat(
+    # Deepseek has trouble thinking, if we restrict it anyhow
+    print('Using our brain...')
+    thoughts = deepseek.chat(
         messages,
+        sampling_params = SamplingParams(
+            stop = ["</think>"],
+            max_tokens = 512
+        )
+    )
+
+    # We just assume </think> got generated, if not, deepseek might have a hard time
+    print('Mangling our thoughts...')
+    prompts = [thought.prompt + thought.outputs[0].text + "</think>" for thought in thoughts]
+    print('Wrapping up...')
+    results = deepseek.generate(
+        prompts,
         sampling_params = sampling_params
     )
 
     print(f'Saving to {save_file}...')
     json_results = [None] * len(results)
+    for i in range(50):
+        print(random.choice(results))
     for i in range(len(results)):
+        # print(results[i])
         json_results[i] = serialize_result(results[i], meta[i])
     with open(save_file, 'w') as json_file:
         json.dump(json_results, json_file)
