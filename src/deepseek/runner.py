@@ -17,16 +17,16 @@ from .deepseek_classify import get_classify_inputs, get_classify_prompts_and_met
 #     config.TAGGED_POSTS,
 #     serialize_annotate_result)
 
-deepseek(
-    get_verify_inputs,
-    get_verify_prompts_and_meta,
-    get_verify_sampling_params,
-    config.VERIFIED_POSTS,
-    serialize_verify_result)
-
 # deepseek(
-#     get_classify_inputs,
-#     get_classify_prompts_and_meta,
-#     get_classify_sampling_params,
-#     config.CLASSIFIED_POSTS,
-#     serialize_classify_result)
+#     get_verify_inputs,
+#     get_verify_prompts_and_meta,
+#     get_verify_sampling_params,
+#     config.VERIFIED_POSTS,
+#     serialize_verify_result)
+
+deepseek(
+    get_classify_inputs,
+    get_classify_prompts_and_meta,
+    get_classify_sampling_params,
+    config.CLASSIFIED_POSTS,
+    serialize_classify_result)

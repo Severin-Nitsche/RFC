@@ -27,10 +27,29 @@ with open(config.REDDIT_POSTS,"r") as posts_file:
     toy = WindowedDataset(data=posts, tokenizer=tokenizer, label_set=label_set, include_annotations=False, tokens_per_batch=4096)
     toyloader = DataLoader(toy, collate_fn=WindowBatch, batch_size=1)
 
+    res = []
+    o_start = -1
+    p_end = -1
+    p_ix = -1
     for X in toyloader:
         with torch.no_grad():
             pred = model(X)
             print(pred)
             for ix, offsets, prediction in zip(X.ixs, X.offsets, pred):
-                print(f'==== Inference #{ix} ====')
-                label_set.pretty_print_token_tags(posts[ix]['text'], offsets, prediction)
+                for (start, end), label in zip(offsets, prediction):
+                    if label > 0:
+                        if (not (ix == p_ix and start - p_end < 5)):
+                            if p_ix > -1:
+                                res.append({
+                                    'index': p_ix,
+                                    'content': posts[p_ix]['text'][o_start:p_end]
+                                })
+                            p_ix = ix
+                            o_start = start
+                        p_end = end
+    res.append({
+        'index': p_ix,
+        'content': posts[p_ix]['text'][o_start:p_end]
+    })
+    with open(config.PRIVACY_POSTS, 'w') as file:
+        json.dump(res,file)

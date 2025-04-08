@@ -3,7 +3,7 @@
 #SBATCH --job-name=annotate
 #SBATCH --output=annotate_%J.txt
 #SBATCH --partition=c23g
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --mem-per-cpu=120G
 
 #SBATCH --time=02:00:00

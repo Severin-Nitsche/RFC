@@ -23,6 +23,13 @@ if CLIENT_SECRET is None:
 # Sentiment Analysis
 ANALYZED_POSTS = OUT_DIR + '/processed_posts.json'
 
+# Privacy Analyzer
+PRIVACY_POSTS = OUT_DIR + '/privacy_posts.json'
+
+# Dump
+SENTIMENT_CSV = OUT_DIR + '/sentiment.csv'
+PRIVACY_CSV = OUT_DIR + '/privacy.csv'
+
 # Deepseek
 EXAMPLE_DIR = './examples'
 TEMPLATE_DIR = './templates'
