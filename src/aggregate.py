@@ -1,5 +1,6 @@
 import json
 import csv
+import re
 
 from . import config
 
@@ -27,7 +28,7 @@ for priv in privacy:
   privacies.append([
     posts[priv['index']]['id'],
     posts[priv['index']]['data']['author'],
-    priv['content']
+    re.sub(r'\s+',' ',priv['content'])
   ])
 
 with open(config.SENTIMENT_CSV, 'w') as s:
