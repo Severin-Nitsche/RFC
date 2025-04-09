@@ -41,7 +41,7 @@ Across all modules, the `src/config.py` serves as the configuration file where v
 ### Reddit Scraper
 To analyze the reddit posts, I wrote a scraper that saves some posts in a `.json` file. The code can be found in `reddit.py`.
 
-**Load the environment**
+#### Load the environment
 <dl>
 <dt>With <code>nix</code></dt>
 <dd>
@@ -62,7 +62,7 @@ ml load Python/3.10.8
 </dd>
 </dl>
 
-**Create the virtual environment**
+#### Create the virtual environment
 ```
 python -m venv venv/reddit
 source venv/reddit/bin/activate
@@ -70,7 +70,7 @@ pip install -r requirements/reddit.txt
 deactivate
 ```
 
-**Execute the scraper**
+#### Execute the scraper
 ```
 source venv/reddit/bin/activate
 python -m src.reddit
@@ -80,7 +80,7 @@ deactivate
 ### Sentiment Analysis
 To conduct the sentiment analysis, I used [PyABSA](https://github.com/yangheng95/PyABSA). This code can be found in `sentiment.py` uses the `.json` file produced with the scraper and amends sentiment information to it.
 
-***Load the environment***
+#### Load the environment
 <dl>
 <dt>With <code>nix</code></dt>
 <dd>
@@ -101,7 +101,7 @@ ml load Python/3.10.8
 </dd>
 </dl>
 
-***Create the virtual environment***
+#### Create the virtual environment
 ```
 python -m venv venv/sentiment
 source venv/sentiment/bin/activate
@@ -109,7 +109,7 @@ pip install -r requirements/sentiment.txt
 deactivate
 ```
 
-**Execute the analysis**
+#### Execute the analysis
 ```
 source venv/sentiment/bin/activate
 python -m src.sentiment
@@ -124,7 +124,7 @@ But I cannot bring the kind of man power for this kind of work needed, as I am o
 
 To conduct the LLM-labelling, I'll write a script that can be found in `deepseek/`.
 
-***Load the environment for TAB***
+#### Load the environment for TAB
 <dl>
 <dt>With <code>nix</code></dt>
 <dd>
@@ -145,7 +145,7 @@ ml load Python/3.10.8
 </dd>
 </dl>
 
-***Create the virtual environment for TAB***
+#### Create the virtual environment for TAB
 ```
 python -m venv venv/tab
 source venv/tab/bin/activate
@@ -153,7 +153,7 @@ pip install -r requirements/sentiment.txt
 deactivate
 ```
 
-**Train the TAB**
+#### Train the TAB
 ```
 source venv/tab/bin/activate
 python -m src.tab.train_model
@@ -168,7 +168,7 @@ sbatch tab.zsh
 ```
 *Note that you may augment the script to run the analysis if you want.*
 
-***Use the TAB***
+#### Use the TAB
 ```
 source venv/tab/bin/activate
 python -m src.tab.toy_example
@@ -180,12 +180,12 @@ If you want some nice terminal output,
 there is a pretty print hidden in `data_manipulation.py`.
 You can view an example of this in the commit history.*
 
-***Load the environment for Label Studio***
+#### Load the environment for Label Studio
 ```
 nix develop .#label-studio
 ```
 
-***Create the virtual environment for Label Studio***
+#### Create the virtual environment for Label Studio
 ```
 python -m venv venv/label-studio
 source venv/label-studio/bin/activate
@@ -193,13 +193,13 @@ pip install -r requirements/label-studio.txt
 deactivate
 ```
 
-**Open the studio**
+#### Open the studio
 ```
 source venv/label-studio/bin/activate
 label-studio
 ```
 
-***Work with the studio***
+#### Work with the studio
 1. Create an account and log in
 2. Create a new project
 3. Go to `Settings>Labeling Interface`
@@ -212,14 +212,14 @@ label-studio
 *If you want to use your manual data for fine tuning, you need to load it in `train_model.py` into the `fine_loader`.
 As its format is different from the echr data, you also need to add `hint='reddit'` to the arguments of `get_loader`.*
 
-***Load the environment for Deepseek***
+#### Load the environment for Deepseek
 ```
 ml load GCCcore/.13.3.0
 ml load Python/3.12.3
 ```
 *I chose a quite large deepseek distillation, so I could only run this on the cluster and have thus no `nix` environment.*
 
-***Create the virtual environment for Deepseek***
+#### Create the virtual environment for Deepseek
 ```
 python -m venv venv/deepseek
 source venv/deepseek/bin/activate
@@ -227,7 +227,7 @@ pip install -r requirements/deepseek.txt
 deactivate
 ```
 
-***Run the Deepseek***
+#### Run the Deepseek
 ```
 sbatch deepseek-slurm.sh
 ```
@@ -238,7 +238,7 @@ The annotation phase finds relevant entities which are then verified in the veri
 Every phase depends on the output of the previous one.
 So make sure to (un)comment the right code and run the phases in order.*
 
-***Convert the Deepseek***
+#### Convert the Deepseek
 ```
 source venv/deepseek/bin/activate # This script is so simple, it should run in any of the environments
 python -m src.converter
@@ -247,7 +247,7 @@ deactivate
 *You will need this to work with the deepseek output in the TAB, as its format is again different from echr and label studio.
 This script basically converts it to the echr format.*
 
-***Aggregate the data***
+#### Aggregate the data
 ```
 source venv/deepseek/bin/activate # This script is so simple, it should run in any of the environments
 python -m src.aggregate
